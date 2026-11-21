@@ -1,334 +1,261 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sheet Music Practice Studio — Zie ginds komt de stoomboot</title>
-  <style>
-    :root {
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --muted: #64748b;
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --success: #16a34a;
-      --danger: #dc2626;
-      --warning: #d97706;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-    }
-    header {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 16px 24px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-    header h1 {
-      margin: 0;
-      font-size: 1.25rem;
-      font-weight: 700;
-    }
-    header .subtitle {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    .container {
-      max-width: 1180px;
-      margin: 0 auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 18px;
-    }
-    .toolbar {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-    }
-    button, select, input[type="number"] {
-      font: inherit;
-      font-size: 0.875rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      padding: 7px 12px;
-      background: var(--surface);
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.15s ease;
-    }
-    button:hover { background: #f1f5f9; }
-    button.primary {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-      font-weight: 600;
-    }
-    button.primary:hover { background: var(--primary-hover); }
-    button.active {
-      background: #dbeafe;
-      border-color: var(--primary);
-      color: var(--primary);
-      font-weight: 600;
-    }
-    button.success {
-      background: #dcfce7;
-      border-color: var(--success);
-      color: #15803d;
-      font-weight: 600;
-    }
-    .status-bar {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      align-items: center;
-      justify-content: space-between;
-      font-size: 0.9rem;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-weight: 600;
-      font-size: 0.8rem;
-      background: #f1f5f9;
-    }
-    .badge.ok { background: #dcfce7; color: #15803d; }
-    .badge.err { background: #fee2e2; color: #b91c1c; }
-    .badge.wait { background: #fef3c7; color: #b45309; }
-    .score-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      overflow-x: auto;
-    }
-    .score-header {
-      text-align: center;
-      margin-bottom: 12px;
-    }
-    .score-header h2 {
-      margin: 0;
-      font-size: 1.4rem;
-    }
-    .score-header p {
-      margin: 2px 0 0;
-      color: var(--muted);
-      font-size: 0.9rem;
-      font-style: italic;
-    }
-    svg#staffSvg {
-      width: 100%;
-      height: auto;
-      display: block;
-      user-select: none;
-    }
-    .editor-panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 16px;
-      display: none;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .editor-panel.visible { display: flex; }
-    .piano-wrap {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px;
-    }
-    .piano {
-      display: flex;
-      position: relative;
-      height: 120px;
-      user-select: none;
-      max-width: 820px;
-      margin: 0 auto;
-    }
-    .white-key {
-      flex: 1;
-      border: 1px solid #cbd5e1;
-      border-radius: 0 0 6px 6px;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-end;
-      align-items: center;
-      padding-bottom: 8px;
-      font-size: 0.72rem;
-      color: var(--muted);
-      cursor: pointer;
-    }
-    .white-key:active, .white-key.pressed { background: #dbeafe; }
-    .white-key.target { background: #fef3c7; border-color: #f59e0b; }
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 50;
-    }
-    .modal-backdrop.open { display: flex; }
-    .modal {
-      background: var(--surface);
-      border-radius: 12px;
-      max-width: 560px;
-      width: 100%;
-      padding: 20px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
-    }
-    textarea {
-      width: 100%;
-      height: 180px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.8rem;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      margin: 10px 0;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sheet Music Practice App</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button, select {
+            padding: 10px 15px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover, select:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        main {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        #display-area {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 20px 0;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
 
-<header>
-  <div>
-    <h1>Sheet Music Practice Studio</h1>
-    <div class="subtitle">Note-by-note highlighting • Live Mic, MIDI & Keyboard feedback • Built-in Editor</div>
-  </div>
-  <div class="group">
-    <button id="btnEditToggle">✏️ Edit Score</button>
-    <button id="btnJsonModal">💾 Save / Load JSON</button>
-  </div>
-</header>
+    <header>
+        <h1>Sheet Music Practice App</h1>
+        <p>Microphone Pitch Detection & Web MIDI Enabled</p>
+    </header>
 
-<div class="container">
-  <!-- Main Controls -->
-  <div class="toolbar">
-    <div class="group">
-      <button id="btnPlay" class="primary">▶ Play</button>
-      <button id="btnStop">⏹ Stop</button>
-      <label style="font-size:0.85rem;">Tempo:
-        <input id="tempoInput" type="number" value="96" min="40" max="200" style="width:68px;" /> BPM
-      </label>
-      <select id="handSelect" title="Hand Isolation">
-        <option value="both">Both Hands</option>
-        <option value="rh">Right Hand Only</option>
-        <option value="lh">Left Hand Only</option>
-      </select>
-      <button id="btnWaitMode" class="active" title="Pauses cursor until you play the right note">⏸ Wait-for-Note: ON</button>
-    </div>
+    <main>
+        <div class="controls">
+            <button id="start-mic-btn">Start Microphone</button>
+            <button id="stop-mic-btn" disabled>Stop Microphone</button>
+            <button id="download-json-btn">Download Session JSON</button>
+        </div>
 
-    <div class="group">
-      <button id="btnMic">🎤 Use Mic</button>
-      <button id="btnMidi">🎹 Connect MIDI</button>
-    </div>
-  </div>
+        <div id="display-area">--</div>
+        <div class="status" id="midi-status">MIDI: Not connected</div>
+        <div class="status" id="mic-status">Mic: Inactive</div>
+    </main>
 
-  <!-- Live Feedback & Accuracy Status -->
-  <div class="status-bar">
-    <div class="group">
-      <span id="statusBadge" class="badge wait">Ready — Target: G3</span>
-      <span id="detectedText" style="color:var(--muted);">Detected: —</span>
-    </div>
-    <div class="group">
-      <span>Accuracy: <strong id="accuracyStat">100%</strong> (<span id="hitsStat">0</span>/<span id="totalStat">0</span>)</span>
-      <span id="inputStatus" style="font-size:0.8rem; color:var(--muted);">Input: On-screen / PC Keys (A–K)</span>
-    </div>
-  </div>
+    <script>
+        // --- Web MIDI API Setup ---
+        const midiStatusEl = document.getElementById('midi-status');
+        const displayAreaEl = document.getElementById('display-area');
 
-  <!-- Built-in Note Editor -->
-  <div id="editorPanel" class="editor-panel">
-    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
-      <strong>Note Editor — Click any note or rest on the staff below to select</strong>
-      <div class="group">
-        <button id="btnPitchUp">▲ Pitch +1</button>
-        <button id="btnPitchDown">▼ Pitch -1</button>
-        <select id="durSelect">
-          <option value="0.5">1/8 Note (Eighth)</option>
-          <option value="1">1/4 Note (Quarter)</option>
-          <option value="2">1/2 Note (Half)</option>
-          <option value="3">Whole / Full Bar Rest</option>
-        </select>
-        <button id="btnToggleRest">Toggle Note / Rest</button>
-        <button id="btnResetScore" style="color:var(--danger);">Reset Default</button>
-      </div>
-    </div>
-    <div id="selectedNoteInfo" style="font-size:0.85rem; color:var(--muted);">No note selected. Click any notehead or rest on the score.</div>
-  </div>
+        function onMIDISuccess(midiAccess) {
+            midiStatusEl.textContent = 'MIDI: Ready';
+            const inputs = midiAccess.inputs.values();
+            for (let input of inputs) {
+                input.onmidimessage = getMIDIMessage;
+            }
+            midiAccess.onstatechange = (e) => {
+                midiStatusEl.textContent = `MIDI: ${e.port.name} ${e.port.state}`;
+            };
+        }
 
-  <!-- Sheet Music Display -->
-  <div class="score-card">
-    <div class="score-header">
-      <h2>Zie ginds komt de stoomboot</h2>
-    </div>
-    <svg id="staffSvg" viewBox="0 0 1060 980"></svg>
-  </div>
+        function onMIDIFailure() {
+            midiStatusEl.textContent = 'MIDI: Could not access your MIDI devices.';
+        }
 
-  <!-- Interactive On-Screen Piano -->
-  <div class="piano-wrap">
-    <div style="text-align:center; font-size:0.8rem; color:var(--muted); margin-bottom:8px;">
-      Click keys below, use your computer keyboard (<strong>Z X C V B N M</strong> = G3–F4, <strong>A S D F G H J K</strong> = C4–C5), or connect a USB MIDI keyboard
-    </div>
-    <div id="piano" class="piano"></div>
-  </div>
-</div>
+        function getMIDIMessage(message) {
+            const [command, note, velocity] = message.data;
+            // Note on message
+            if (command === 144 && velocity > 0) {
+                const noteName = midiNoteToName(note);
+                displayAreaEl.textContent = `Note: ${noteName} (${note})`;
+            }
+        }
 
-<!-- JSON Save / Load Modal -->
-<div id="jsonModal" class="modal-backdrop">
-  <div class="modal">
-    <h3 style="margin-top:0;">Save or Load Score JSON</h3>
-    <p style="font-size:0.85rem; color:var(--muted); margin-bottom:8px;">
-      Download your score as a <code>.json</code> file or copy/paste the JSON text below to back up and restore your edits anytime.
-    </p>
-    <textarea id="jsonTextarea"></textarea>
-    <div class="group" style="justify-content:flex-end;">
-      <button id="btnDownloadJson" class="primary">⬇ Download .json File</button>
-      <button id="btnCopyJson">📋 Copy to Clipboard</button>
-      <button id="btnLoadJson" class="success">⬆ Apply Pasted JSON</button>
-      <button id="btnCloseModal">Close</button>
-    </div>
-  </div>
-</div>
+        function midiNoteToName(midi) {
+            const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+            const octave = Math.floor(midi / 12) - 1;
+            const name = notes[midi % 12];
+            return `${name}${octave}`;
+        }
 
-<script>
-// --- Pitch & Music Utilities ---
-const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-const DIATONIC = ["C", "D", "E", "F", "G", "A", "B"];
+        if (navigator.requestMIDIAccess) {
+            navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
+        } else {
+            midiStatusEl.textContent = 'MIDI: Not supported in this browser.';
+        }
 
-function midiToName(midi) {
-  if (midi == null) return "Rest";
+        // --- Microphone Pitch Detection Setup (Auto-correlation) ---
+        let audioContext = null;
+        let analyser = null;
+        let mediaStream = null;
+        let rafId = null;
+
+        const startMicBtn = document.getElementById('start-mic-btn');
+        const stopMicBtn = document.getElementById('stop-mic-btn');
+        const micStatusEl = document.getElementById('mic-status');
+
+        startMicBtn.addEventListener('click', async () => {
+            try {
+                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createMediaStreamSource(mediaStream);
+                analyser = audioContext.createAnalyser();
+                analyser.fftSize = 2048;
+                source.connect(analyser);
+
+                startMicBtn.disabled = true;
+                stopMicBtn.disabled = false;
+                micStatusEl.textContent = 'Mic: Active';
+                updatePitch();
+            } catch (err) {
+                alert('Microphone access denied or not supported.');
+                console.error(err);
+            }
+        });
+
+        stopMicBtn.addEventListener('click', () => {
+            if (rafId) cancelAnimationFrame(rafId);
+            if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
+            if (audioContext) audioContext.close();
+
+            startMicBtn.disabled = false;
+            stopMicBtn.disabled = true;
+            micStatusEl.textContent = 'Mic: Inactive';
+            displayAreaEl.textContent = '--';
+        });
+
+        function autoCorrelate(buf, sampleRate) {
+            const SIZE = buf.length;
+            let rms = 0;
+            for (let i = 0; i < SIZE; i++) {
+                const val = buf[i];
+                rms += val * val;
+            }
+            rms = Math.sqrt(rms / SIZE);
+            if (rms < 0.01) return -1; // Not enough signal
+
+            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+            for (let i = 0; i < SIZE / 2; i++) {
+                if (Math.abs(buf[i]) < thres) { r1 = i; break; }
+            }
+            for (let i = 1; i < SIZE / 2; i++) {
+                if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+            }
+
+            buf = buf.slice(r1, r2);
+            const c = new Float32Array(buf.length);
+            for (let i = 0; i < buf.length; i++) {
+                for (let j = 0; j < buf.length - i; j++) {
+                    c[i] = c[i] + buf[j] * buf[j + i];
+                }
+            }
+
+            let d = 0;
+            while (c[d] > c[d + 1]) d++;
+            let maxval = -1, maxpos = -1;
+            for (let i = d; i < buf.length; i++) {
+                if (c[i] > maxval) {
+                    maxval = c[i];
+                    maxpos = i;
+                }
+            }
+            let T0 = maxpos;
+            return sampleRate / T0;
+        }
+
+        const buf = new Float32Array(2048);
+        function updatePitch() {
+            analyser.getFloatTimeDomainData(buf);
+            const acPitch = autoCorrelate(buf, audioContext.sampleRate);
+
+            if (acPitch !== -1) {
+                const note = freqToNoteName(acPitch);
+                displayAreaEl.textContent = `Pitch: ${note} (${Math.round(acPitch)} Hz)`;
+            }
+
+            rafId = window.requestAnimationFrame(updatePitch);
+        }
+
+        function freqToNoteNames(frequency) {
+            const noteNum = 12 * (Math.log(frequency / 440) / Math.LN2);
+            return Math.round(noteNum) + 69;
+        }
+
+        function freqToNoteName(freq) {
+            const midi = freqToNoteNames(freq);
+            return midiNoteToName(midi);
+        }
+
+        // --- JSON File Download Setup ---
+        const downloadJsonBtn = document.getElementById('download-json-btn');
+        downloadJsonBtn.addEventListener('click', () => {
+            const practiceData = {
+                app: "Sheet Music Practice App",
+                timestamp: new Date().toISOString(),
+                notesPracticed: [
+                    { note: "C4", duration: "4", timestamp: 1 },
+                    { note: "E4", duration: "4", timestamp: 2 },
+                    { note: "G4", duration: "2", timestamp: 3 }
+                ]
+            };
+
+            const blob = new Blob([JSON.stringify(practiceData, null, 2)], { type: 'json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'practice-session.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
