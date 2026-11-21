@@ -1,261 +1,892 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sheet Music Practice App</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        button, select {
-            padding: 10px 15px;
-            font-size: 1rem;
-            border: none;
-            border-radius: 5px;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        button:hover, select:hover {
-            background-color: #0056b3;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        main {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #display-area {
-            font-size: 2rem;
-            font-weight: bold;
-            margin: 20px 0;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .status {
-            font-size: 0.9rem;
-            color: #666;
-            margin-top: 10px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sheet Music Practice Studio — Zie ginds komt de stoomboot</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --danger: #dc2626;
+      --warning: #d97706;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+    header .subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+    .toolbar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    button, select, input[type="number"] {
+      font: inherit;
+      font-size: 0.875rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      padding: 7px 12px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    button:hover { background: #f1f5f9; }
+    button.primary {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+    button.primary:hover { background: var(--primary-hover); }
+    button.active {
+      background: #dbeafe;
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+    button.success {
+      background: #dcfce7;
+      border-color: var(--success);
+      color: #15803d;
+      font-weight: 600;
+    }
+    .status-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      background: #f1f5f9;
+    }
+    .badge.ok { background: #dcfce7; color: #15803d; }
+    .badge.err { background: #fee2e2; color: #b91c1c; }
+    .badge.wait { background: #fef3c7; color: #b45309; }
+    .score-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+    }
+    .score-header {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .score-header h2 {
+      margin: 0;
+      font-size: 1.4rem;
+    }
+    .score-header p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+    svg#staffSvg {
+      width: 100%;
+      height: auto;
+      display: block;
+      user-select: none;
+    }
+    .editor-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .editor-panel.visible { display: flex; }
+    .piano-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .piano {
+      display: flex;
+      position: relative;
+      height: 120px;
+      user-select: none;
+      max-width: 820px;
+      margin: 0 auto;
+    }
+    .white-key {
+      flex: 1;
+      border: 1px solid #cbd5e1;
+      border-radius: 0 0 6px 6px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      padding-bottom: 8px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      cursor: pointer;
+    }
+    .white-key:active, .white-key.pressed { background: #dbeafe; }
+    .white-key.target { background: #fef3c7; border-color: #f59e0b; }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border-radius: 12px;
+      max-width: 560px;
+      width: 100%;
+      padding: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+    }
+    textarea {
+      width: 100%;
+      height: 180px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.8rem;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      margin: 10px 0;
+    }
+  </style>
 </head>
 <body>
 
-    <header>
-        <h1>Sheet Music Practice App</h1>
-        <p>Microphone Pitch Detection & Web MIDI Enabled</p>
-    </header>
+<header>
+  <div>
+    <h1>Sheet Music Practice Studio</h1>
+    <div class="subtitle">Note-by-note highlighting • Live Mic, MIDI & Keyboard feedback • Built-in Editor</div>
+  </div>
+  <div class="group">
+    <button id="btnEditToggle">✏️ Edit Score</button>
+    <button id="btnJsonModal">💾 Save / Load JSON</button>
+  </div>
+</header>
 
-    <main>
-        <div class="controls">
-            <button id="start-mic-btn">Start Microphone</button>
-            <button id="stop-mic-btn" disabled>Stop Microphone</button>
-            <button id="download-json-btn">Download Session JSON</button>
-        </div>
+<div class="container">
+  <div class="toolbar">
+    <div class="group">
+      <button id="btnPlay" class="primary">▶ Play</button>
+      <button id="btnStop">⏹ Stop</button>
+      <label style="font-size:0.85rem;">Tempo:
+        <input id="tempoInput" type="number" value="96" min="40" max="200" style="width:68px;" /> BPM
+      </label>
+      <select id="handSelect" title="Hand Isolation">
+        <option value="both">Both Hands</option>
+        <option value="rh">Right Hand Only</option>
+        <option value="lh">Left Hand Only</option>
+      </select>
+      <button id="btnWaitMode" class="active" title="Pauses cursor until you play the right note">⏸ Wait-for-Note: ON</button>
+    </div>
 
-        <div id="display-area">--</div>
-        <div class="status" id="midi-status">MIDI: Not connected</div>
-        <div class="status" id="mic-status">Mic: Inactive</div>
-    </main>
+    <div class="group">
+      <button id="btnMic">🎤 Use Mic</button>
+      <button id="btnMidi">🎹 Connect MIDI</button>
+    </div>
+  </div>
 
-    <script>
-        // --- Web MIDI API Setup ---
-        const midiStatusEl = document.getElementById('midi-status');
-        const displayAreaEl = document.getElementById('display-area');
+  <div class="status-bar">
+    <div class="group">
+      <span id="statusBadge" class="badge wait">Ready — Target: G3</span>
+      <span id="detectedText" style="color:var(--muted);">Detected: —</span>
+    </div>
+    <div class="group">
+      <span>Accuracy: <strong id="accuracyStat">100%</strong> (<span id="hitsStat">0</span>/<span id="totalStat">0</span>)</span>
+      <span id="inputStatus" style="font-size:0.8rem; color:var(--muted);">Input: On-screen / PC Keys (A–K)</span>
+    </div>
+  </div>
 
-        function onMIDISuccess(midiAccess) {
-            midiStatusEl.textContent = 'MIDI: Ready';
-            const inputs = midiAccess.inputs.values();
-            for (let input of inputs) {
-                input.onmidimessage = getMIDIMessage;
+  <div id="editorPanel" class="editor-panel">
+    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
+      <strong>Note Editor — Click any note or rest on the staff below to select</strong>
+      <div class="group">
+        <button id="btnPitchUp">▲ Pitch +1</button>
+        <button id="btnPitchDown">▼ Pitch -1</button>
+        <select id="durSelect">
+          <option value="0.5">1/8 Note (Eighth)</option>
+          <option value="1">1/4 Note (Quarter)</option>
+          <option value="2">1/2 Note (Half)</option>
+          <option value="3">Whole / Full Bar Rest</option>
+        </select>
+        <button id="btnToggleRest">Toggle Note / Rest</button>
+        <button id="btnResetScore" style="color:var(--danger);">Reset Default</button>
+      </div>
+    </div>
+    <div id="selectedNoteInfo" style="font-size:0.85rem; color:var(--muted);">No note selected. Click any notehead or rest on the score.</div>
+  </div>
+
+  <div class="score-card">
+    <div class="score-header">
+      <h2>Zie ginds komt de stoomboot</h2>
+      <p>arr. M. de Hoop</p>
+    </div>
+    <svg id="staffSvg" viewBox="0 0 1060 980"></svg>
+  </div>
+
+  <div class="piano-wrap">
+    <div style="text-align:center; font-size:0.8rem; color:var(--muted); margin-bottom:8px;">
+      Click keys below, use your computer keyboard (<strong>Z X C V B N M</strong> = G3–F4, <strong>A S D F G H J K</strong> = C4–C5), or connect a USB MIDI keyboard
+    </div>
+    <div id="piano" class="piano"></div>
+  </div>
+</div>
+
+<div id="jsonModal" class="modal-backdrop">
+  <div class="modal">
+    <h3 style="margin-top:0;">Save or Load Score JSON</h3>
+    <p style="font-size:0.85rem; color:var(--muted); margin-bottom:8px;">
+      Download your score as a <code>.json</code> file or copy/paste the JSON text below to back up and restore your edits anytime.
+    </p>
+    <textarea id="jsonTextarea"></textarea>
+    <div class="group" style="justify-content:flex-end;">
+      <button id="btnDownloadJson" class="primary">⬇ Download .json File</button>
+      <button id="btnCopyJson">📋 Copy to Clipboard</button>
+      <button id="btnLoadJson" class="success">⬆ Apply Pasted JSON</button>
+      <button id="btnCloseModal">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+const DIATONIC = ["C", "D", "E", "F", "G", "A", "B"];
+
+function midiToName(midi) {
+  if (midi == null) return "Rest";
+  const name = NOTE_NAMES[midi % 12];
+  const octave = Math.floor(midi / 12) - 1;
+  return `${name}${octave}`;
+}
+
+function nameToMidi(str) {
+  if (!str || str === "Rest") return null;
+  const m = str.match(/^([A-G]#?)(-?\d)$/);
+  if (!m) return 60;
+  return (parseInt(m[2], 10) + 1) * 12 + NOTE_NAMES.indexOf(m[1]);
+}
+
+function shiftDiatonic(midi, dir) {
+  if (midi == null) return 60;
+  const name = midiToName(midi).replace("#", "");
+  const letter = name[0];
+  let oct = parseInt(name.slice(1), 10);
+  let idx = DIATONIC.indexOf(letter) + dir;
+  if (idx >= 7) { idx = 0; oct++; }
+  if (idx < 0) { idx = 6; oct--; }
+  return nameToMidi(`${DIATONIC[idx]}${oct}`);
+}
+
+function diatonicStep(midi) {
+  const name = midiToName(midi).replace("#", "");
+  const letter = name[0];
+  const oct = parseInt(name.slice(1), 10);
+  return oct * 7 + DIATONIC.indexOf(letter);
+}
+
+const DEFAULT_SCORE = [
+  { beats: 1, rh: [{ p: null, d: 1 }], lh: [{ p: 55, d: 1 }] },
+  { beats: 3, rh: [{ p: 60, d: 1 }, { p: 60, d: 1 }, { p: 64, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: 62, d: 1 }, { p: 62, d: 1 }, { p: 65, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: null, d: 1 }, { p: null, d: 1 }, { p: 62, d: 1 }], lh: [{ p: 59, d: 1 }, { p: 59, d: 1 }, { p: null, d: 1 }] },
+  { beats: 3, rh: [{ p: 60, d: 2 }, { p: null, d: 1 }], lh: [{ p: null, d: 1 }, { p: null, d: 1 }, { p: 55, d: 1 }] },
+  { beats: 3, rh: [{ p: 60, d: 1 }, { p: 60, d: 1 }, { p: 64, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: 62, d: 0.5 }, { p: 64, d: 0.5 }, { p: 62, d: 1 }, { p: 65, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: null, d: 1 }, { p: null, d: 1 }, { p: 62, d: 1 }], lh: [{ p: 59, d: 1 }, { p: 59, d: 1 }, { p: null, d: 1 }] },
+  { beats: 3, rh: [{ p: 60, d: 2 }, { p: 67, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: 64, d: 1 }, { p: 62, d: 1 }, { p: 65, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: 67, d: 1 }, { p: 65, d: 1 }, { p: 67, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: 67, d: 1 }, { p: 65, d: 1 }, { p: 64, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: 62, d: 2 }, { p: null, d: 1 }], lh: [{ p: null, d: 1 }, { p: null, d: 1 }, { p: 55, d: 1 }] },
+  { beats: 3, rh: [{ p: 60, d: 1 }, { p: 59, d: 0.5 }, { p: 60, d: 0.5 }, { p: 62, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: 64, d: 1 }, { p: 60, d: 1 }, { p: 64, d: 1 }], lh: [{ p: null, d: 3 }] },
+  { beats: 3, rh: [{ p: 64, d: 1 }, { p: 62, d: 1 }, { p: null, d: 1 }], lh: [{ p: null, d: 1 }, { p: null, d: 1 }, { p: 59, d: 1 }] },
+  { beats: 2, rh: [{ p: 60, d: 2 }], lh: [{ p: null, d: 2 }] }
+];
+
+let score = JSON.parse(localStorage.getItem("stoomboot_score_v1")) || JSON.parse(JSON.stringify(DEFAULT_SCORE));
+function saveLocal() {
+  localStorage.setItem("stoomboot_score_v1", JSON.stringify(score));
+}
+
+let timeline = [];
+let currentStep = 0;
+let isPlaying = false;
+let waitMode = true;
+let editMode = false;
+let selectedNote = null;
+let hits = 0, attempts = 0;
+let noteResults = {};
+let audioCtx = null;
+let playTimer = null;
+
+function rebuildTimeline() {
+  const hand = document.getElementById("handSelect").value;
+  timeline = [];
+  score.forEach((m, mIdx) => {
+    const events = [];
+    if (hand === "both" || hand === "rh") {
+      let bt = 0;
+      m.rh.forEach((n, nIdx) => {
+        if (n.p != null) events.push({ beat: bt, dur: n.d, midi: n.p, hand: "rh", mIdx, nIdx });
+        bt += n.d;
+      });
+    }
+    if (hand === "both" || hand === "lh") {
+      let bt = 0;
+      m.lh.forEach((n, nIdx) => {
+        if (n.p != null) events.push({ beat: bt, dur: n.d, midi: n.p, hand: "lh", mIdx, nIdx });
+        bt += n.d;
+      });
+    }
+    events.sort((a, b) => a.beat - b.beat);
+    events.forEach(ev => timeline.push(ev));
+  });
+  if (currentStep >= timeline.length) currentStep = 0;
+  updateStatus();
+}
+
+function playTone(midi, durSec = 0.35) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = "triangle";
+  osc.frequency.value = 440 * Math.pow(2, (midi - 69) / 12);
+  gain.gain.setValueAtTime(0.22, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + durSec);
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  osc.start();
+  osc.stop(audioCtx.currentTime + durSec);
+}
+
+function renderScore() {
+  const svg = document.getElementById("staffSvg");
+  svg.innerHTML = "";
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs, parent = svg) => {
+    const node = document.createElementNS(NS, tag);
+    for (const [k, v] of Object.entries(attrs)) node.setAttribute(k, v);
+    parent.appendChild(node);
+    return node;
+  };
+
+  const systems = [
+    [0, 1, 2, 3, 4],
+    [5, 6, 7, 8],
+    [9, 10, 11, 12],
+    [13, 14, 15, 16]
+  ];
+
+  const activeEv = timeline[currentStep];
+
+  systems.forEach((mIndices, sysIdx) => {
+    const topY = 45 + sysIdx * 230;
+    const bassTopY = topY + 95;
+    const lineGap = 10;
+    const startX = 35;
+    const endX = 1030;
+
+    el("line", { x1: startX, y1: topY, x2: startX, y2: bassTopY + 40, stroke: "#0f172a", "stroke-width": 2 });
+
+    for (let i = 0; i < 5; i++) {
+      el("line", { x1: startX, y1: topY + i * lineGap, x2: endX, y2: topY + i * lineGap, stroke: "#334155", "stroke-width": 1 });
+      el("line", { x1: startX, y1: bassTopY + i * lineGap, x2: endX, y2: bassTopY + i * lineGap, stroke: "#334155", "stroke-width": 1 });
+    }
+
+    const gClef = el("text", { x: startX + 8, y: topY + 34, "font-size": 42, fill: "#0f172a" });
+    gClef.textContent = "𝄞";
+    const fClef = el("text", { x: startX + 8, y: bassTopY + 32, "font-size": 36, fill: "#0f172a" });
+    fClef.textContent = "𝄢";
+
+    let curX = startX + 46;
+    if (sysIdx === 0) {
+      el("text", { x: curX, y: topY + 18, "font-size": 20, "font-weight": "bold" }).textContent = "3";
+      el("text", { x: curX, y: topY + 38, "font-size": 20, "font-weight": "bold" }).textContent = "4";
+      el("text", { x: curX, y: bassTopY + 18, "font-size": 20, "font-weight": "bold" }).textContent = "3";
+      el("text", { x: curX, y: bassTopY + 38, "font-size": 20, "font-weight": "bold" }).textContent = "4";
+      curX += 26;
+    }
+
+    const totalBeats = mIndices.reduce((acc, idx) => acc + score[idx].beats, 0);
+    const usableW = endX - curX;
+
+    mIndices.forEach((mIdx) => {
+      const m = score[mIdx];
+      const mW = (m.beats / totalBeats) * usableW;
+
+      if (mIdx === 5 || mIdx === 10 || mIdx === 15) {
+        el("text", { x: curX + 2, y: topY - 12, "font-size": 12, "font-style": "italic", fill: "#475569" }).textContent = String(mIdx);
+      }
+
+      ["rh", "lh"].forEach((hand) => {
+        const isTreble = hand === "rh";
+        const refBottomY = isTreble ? topY + 40 : bassTopY + 40;
+        const refStep = isTreble ? diatonicStep(64) : diatonicStep(43);
+        const notes = m[hand];
+        let beatOffset = 0;
+        const coords = [];
+
+        notes.forEach((n, nIdx) => {
+          const nx = curX + ((beatOffset + n.d * 0.45) / m.beats) * mW;
+          const isTarget = activeEv && activeEv.mIdx === mIdx && activeEv.hand === hand && activeEv.nIdx === nIdx;
+          const isSelected = selectedNote && selectedNote.mIdx === mIdx && selectedNote.hand === hand && selectedNote.nIdx === nIdx;
+          const resKey = `${mIdx}-${hand}-${nIdx}`;
+          const res = noteResults[resKey];
+
+          let color = "#0f172a";
+          if (isSelected) color = "#7c3aed";
+          else if (isTarget) color = "#2563eb";
+          else if (res === "ok") color = "#16a34a";
+          else if (res === "err") color = "#dc2626";
+
+          if (n.p == null) {
+            const ry = isTreble ? topY + 20 : bassTopY + 20;
+            const rText = el("text", {
+              x: nx - 6, y: ry + 6, "font-size": n.d >= 3 ? 22 : 24, fill: color, cursor: "pointer"
+            });
+            rText.textContent = n.d >= 3 ? "𝄻" : n.d === 2 ? "𝄼" : "𝄽";
+            rText.addEventListener("click", () => selectNoteForEdit(mIdx, hand, nIdx));
+            coords.push(null);
+          } else {
+            const stepDiff = diatonicStep(n.p) - refStep;
+            const ny = refBottomY - stepDiff * 5;
+
+            if (isTreble && stepDiff <= -2) {
+              for (let s = -2; s >= stepDiff; s -= 2) {
+                const ly = refBottomY - s * 5;
+                el("line", { x1: nx - 11, y1: ly, x2: nx + 11, y2: ly, stroke: "#0f172a", "stroke-width": 1.2 });
+              }
             }
-            midiAccess.onstatechange = (e) => {
-                midiStatusEl.textContent = `MIDI: ${e.port.name} ${e.port.state}`;
-            };
-        }
 
-        function onMIDIFailure() {
-            midiStatusEl.textContent = 'MIDI: Could not access your MIDI devices.';
-        }
-
-        function getMIDIMessage(message) {
-            const [command, note, velocity] = message.data;
-            // Note on message
-            if (command === 144 && velocity > 0) {
-                const noteName = midiNoteToName(note);
-                displayAreaEl.textContent = `Note: ${noteName} (${note})`;
+            if (isTarget) {
+              el("circle", { cx: nx, cy: ny, r: 12, fill: "rgba(37, 99, 235, 0.16)" });
             }
-        }
 
-        function midiNoteToName(midi) {
-            const notes = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-            const octave = Math.floor(midi / 12) - 1;
-            const name = notes[midi % 12];
-            return `${name}${octave}`;
-        }
+            const stemUp = isTreble ? n.p < 71 : n.p < 50;
+            const stemX = stemUp ? nx + 5.5 : nx - 5.5;
+            const stemEndY = stemUp ? ny - 28 : ny + 28;
 
-        if (navigator.requestMIDIAccess) {
-            navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure);
-        } else {
-            midiStatusEl.textContent = 'MIDI: Not supported in this browser.';
-        }
+            const head = el("ellipse", {
+              cx: nx, cy: ny, rx: 6, ry: 4.3,
+              transform: `rotate(-18 ${nx} ${ny})`,
+              fill: n.d >= 2 ? "#ffffff" : color,
+              stroke: color,
+              "stroke-width": n.d >= 2 ? 2 : 1.2,
+              cursor: "pointer"
+            });
+            head.addEventListener("click", () => selectNoteForEdit(mIdx, hand, nIdx));
 
-        // --- Microphone Pitch Detection Setup (Auto-correlation) ---
-        let audioContext = null;
-        let analyser = null;
-        let mediaStream = null;
-        let rafId = null;
-
-        const startMicBtn = document.getElementById('start-mic-btn');
-        const stopMicBtn = document.getElementById('stop-mic-btn');
-        const micStatusEl = document.getElementById('mic-status');
-
-        startMicBtn.addEventListener('click', async () => {
-            try {
-                mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const source = audioContext.createMediaStreamSource(mediaStream);
-                analyser = audioContext.createAnalyser();
-                analyser.fftSize = 2048;
-                source.connect(analyser);
-
-                startMicBtn.disabled = true;
-                stopMicBtn.disabled = false;
-                micStatusEl.textContent = 'Mic: Active';
-                updatePitch();
-            } catch (err) {
-                alert('Microphone access denied or not supported.');
-                console.error(err);
-            }
+            coords.push({ nx, ny, stemX, stemEndY, stemUp, dur: n.d, color });
+          }
+          beatOffset += n.d;
         });
 
-        stopMicBtn.addEventListener('click', () => {
-            if (rafId) cancelAnimationFrame(rafId);
-            if (mediaStream) mediaStream.getTracks().forEach(track => track.stop());
-            if (audioContext) audioContext.close();
-
-            startMicBtn.disabled = false;
-            stopMicBtn.disabled = true;
-            micStatusEl.textContent = 'Mic: Inactive';
-            displayAreaEl.textContent = '--';
-        });
-
-        function autoCorrelate(buf, sampleRate) {
-            const SIZE = buf.length;
-            let rms = 0;
-            for (let i = 0; i < SIZE; i++) {
-                const val = buf[i];
-                rms += val * val;
+        for (let i = 0; i < coords.length; i++) {
+          const c = coords[i];
+          if (!c) continue;
+          const next = coords[i + 1];
+          if (c.dur === 0.5 && next && next.dur === 0.5) {
+            const beamY = c.stemUp ? Math.min(c.stemEndY, next.stemEndY) : Math.max(c.stemEndY, next.stemEndY);
+            el("line", { x1: c.stemX, y1: c.ny, x2: c.stemX, y2: beamY, stroke: c.color, "stroke-width": 1.5 });
+            el("line", { x1: next.stemX, y1: next.ny, x2: next.stemX, y2: beamY, stroke: next.color, "stroke-width": 1.5 });
+            el("line", { x1: c.stemX, y1: beamY, x2: next.stemX, y2: beamY, stroke: c.color, "stroke-width": 4 });
+            i++;
+          } else {
+            el("line", { x1: c.stemX, y1: c.ny, x2: c.stemX, y2: c.stemEndY, stroke: c.color, "stroke-width": 1.5 });
+            if (c.dur === 0.5) {
+              const path = c.stemUp
+                ? `M ${c.stemX} ${c.stemEndY} Q ${c.stemX + 10} ${c.stemEndY + 8} ${c.stemX + 5} ${c.stemEndY + 18}`
+                : `M ${c.stemX} ${c.stemEndY} Q ${c.stemX + 10} ${c.stemEndY - 8} ${c.stemX + 5} ${c.stemEndY - 18}`;
+              el("path", { d: path, fill: "none", stroke: c.color, "stroke-width": 2 });
             }
-            rms = Math.sqrt(rms / SIZE);
-            if (rms < 0.01) return -1; // Not enough signal
-
-            let r1 = 0, r2 = SIZE - 1, thres = 0.2;
-            for (let i = 0; i < SIZE / 2; i++) {
-                if (Math.abs(buf[i]) < thres) { r1 = i; break; }
-            }
-            for (let i = 1; i < SIZE / 2; i++) {
-                if (Math.abs(buf[SIZE - i]) < thres) { r2 = SIZE - i; break; }
-            }
-
-            buf = buf.slice(r1, r2);
-            const c = new Float32Array(buf.length);
-            for (let i = 0; i < buf.length; i++) {
-                for (let j = 0; j < buf.length - i; j++) {
-                    c[i] = c[i] + buf[j] * buf[j + i];
-                }
-            }
-
-            let d = 0;
-            while (c[d] > c[d + 1]) d++;
-            let maxval = -1, maxpos = -1;
-            for (let i = d; i < buf.length; i++) {
-                if (c[i] > maxval) {
-                    maxval = c[i];
-                    maxpos = i;
-                }
-            }
-            let T0 = maxpos;
-            return sampleRate / T0;
+          }
         }
+      });
 
-        const buf = new Float32Array(2048);
-        function updatePitch() {
-            analyser.getFloatTimeDomainData(buf);
-            const acPitch = autoCorrelate(buf, audioContext.sampleRate);
+      curX += mW;
+      const isFinal = mIdx === score.length - 1;
+      el("line", { x1: curX, y1: topY, x2: curX, y2: topY + 40, stroke: "#0f172a", "stroke-width": isFinal ? 3 : 1.2 });
+      el("line", { x1: curX, y1: bassTopY, x2: curX, y2: bassTopY + 40, stroke: "#0f172a", "stroke-width": isFinal ? 3 : 1.2 });
+      if (isFinal) {
+        el("line", { x1: curX - 5, y1: topY, x2: curX - 5, y2: topY + 40, stroke: "#0f172a", "stroke-width": 1.2 });
+        el("line", { x1: curX - 5, y1: bassTopY, x2: curX - 5, y2: bassTopY + 40, stroke: "#0f172a", "stroke-width": 1.2 });
+      }
+    });
+  });
 
-            if (acPitch !== -1) {
-                const note = freqToNoteName(acPitch);
-                displayAreaEl.textContent = `Pitch: ${note} (${Math.round(acPitch)} Hz)`;
-            }
+  highlightPianoTarget();
+}
 
-            rafId = window.requestAnimationFrame(updatePitch);
+function handleNoteInput(midi, source = "Piano") {
+  playTone(midi, 0.35);
+  const name = midiToName(midi);
+  document.getElementById("detectedText").textContent = `Detected (${source}): ${name}`;
+
+  const target = timeline[currentStep];
+  if (!target) return;
+
+  attempts++;
+  const resKey = `${target.mIdx}-${target.hand}-${target.nIdx}`;
+  if (midi === target.midi) {
+    hits++;
+    noteResults[resKey] = "ok";
+    currentStep++;
+    if (currentStep >= timeline.length) {
+      currentStep = 0;
+      document.getElementById("statusBadge").className = "badge ok";
+      document.getElementById("statusBadge").textContent = `Finished! Final Accuracy: ${Math.round((hits / attempts) * 100)}%`;
+    } else {
+      updateStatus("ok", `Correct (${name})! Next: ${midiToName(timeline[currentStep].midi)}`);
+    }
+  } else {
+    noteResults[resKey] = "err";
+    if (!waitMode) currentStep = (currentStep + 1) % timeline.length;
+    updateStatus("err", `Wrong (${name}) — Expected ${midiToName(target.midi)}`);
+  }
+
+  document.getElementById("hitsStat").textContent = hits;
+  document.getElementById("totalStat").textContent = attempts;
+  document.getElementById("accuracyStat").textContent = attempts ? `${Math.round((hits / attempts) * 100)}%` : "100%";
+  renderScore();
+}
+
+function updateStatus(type = "wait", msg = null) {
+  const badge = document.getElementById("statusBadge");
+  const target = timeline[currentStep];
+  badge.className = `badge ${type}`;
+  badge.textContent = msg || (target ? `Target: ${midiToName(target.midi)} (Measure ${target.mIdx})` : "Ready");
+}
+
+function togglePlay() {
+  if (isPlaying) {
+    isPlaying = false;
+    clearTimeout(playTimer);
+    document.getElementById("btnPlay").textContent = "▶ Play";
+    return;
+  }
+  isPlaying = true;
+  document.getElementById("btnPlay").textContent = "⏸ Pause";
+  stepPlayback();
+}
+
+function stepPlayback() {
+  if (!isPlaying) return;
+  const ev = timeline[currentStep];
+  if (!ev) { isPlaying = false; return; }
+  const bpm = parseInt(document.getElementById("tempoInput").value, 10) || 96;
+  const secPerBeat = 60 / bpm;
+  playTone(ev.midi, ev.dur * secPerBeat * 0.9);
+  renderScore();
+  updateStatus("wait", `Playing: ${midiToName(ev.midi)}`);
+
+  playTimer = setTimeout(() => {
+    currentStep++;
+    if (currentStep >= timeline.length) {
+      currentStep = 0;
+      isPlaying = false;
+      document.getElementById("btnPlay").textContent = "▶ Play";
+      renderScore();
+      updateStatus();
+    } else {
+      stepPlayback();
+    }
+  }, ev.dur * secPerBeat * 1000);
+}
+
+document.getElementById("btnMic").addEventListener("click", async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = audioCtx.createMediaStreamSource(stream);
+    const analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 2048;
+    src.connect(analyser);
+
+    document.getElementById("btnMic").classList.add("success");
+    document.getElementById("btnMic").textContent = "🎤 Mic Active";
+    document.getElementById("inputStatus").textContent = "Input: Live Microphone Active";
+
+    const buf = new Float32Array(analyser.fftSize);
+    let lastMidi = null, cooldown = 0;
+
+    setInterval(() => {
+      if (cooldown > 0) { cooldown--; return; }
+      analyser.getFloatTimeDomainData(buf);
+      const freq = autoCorrelate(buf, audioCtx.sampleRate);
+      if (freq > 80 && freq < 1100) {
+        const midi = Math.round(69 + 12 * Math.log2(freq / 440));
+        if (midi !== lastMidi) {
+          lastMidi = midi;
+          cooldown = 6;
+          handleNoteInput(midi, "Mic");
         }
+      } else {
+        lastMidi = null;
+      }
+    }, 60);
+  } catch (err) {
+    alert("Microphone access was blocked or unavailable. Make sure this page is hosted on HTTPS (e.g., GitHub Pages or Netlify) and mic permissions are allowed.");
+  }
+});
 
-        function freqToNoteNames(frequency) {
-            const noteNum = 12 * (Math.log(frequency / 440) / Math.LN2);
-            return Math.round(noteNum) + 69;
+function autoCorrelate(buf, sampleRate) {
+  let rms = 0;
+  for (let i = 0; i < buf.length; i++) rms += buf[i] * buf[i];
+  if (Math.sqrt(rms / buf.length) < 0.02) return -1;
+
+  let bestOffset = -1, bestCorr = 0;
+  for (let offset = 32; offset < buf.length / 2; offset++) {
+    let corr = 0;
+    for (let i = 0; i < buf.length / 2; i++) corr += buf[i] * buf[i + offset];
+    if (corr > bestCorr) { bestCorr = corr; bestOffset = offset; }
+  }
+  return bestOffset > 0 ? sampleRate / bestOffset : -1;
+}
+
+document.getElementById("btnMidi").addEventListener("click", async () => {
+  if (!navigator.requestMIDIAccess) {
+    alert("Web MIDI is not supported in this browser. Try Chrome, Edge, or Opera over HTTPS.");
+    return;
+  }
+  try {
+    const access = await navigator.requestMIDIAccess();
+    let count = 0;
+    for (const input of access.inputs.values()) {
+      count++;
+      input.onmidimessage = (msg) => {
+        const [status, note, velocity] = msg.data;
+        if ((status & 0xf0) === 0x90 && velocity > 0) {
+          handleNoteInput(note, "MIDI");
         }
+      };
+    }
+    document.getElementById("btnMidi").classList.add("success");
+    document.getElementById("btnMidi").textContent = count ? `🎹 MIDI Connected (${count})` : "🎹 MIDI Ready (Plug in keyboard)";
+    document.getElementById("inputStatus").textContent = count ? "Input: USB MIDI Keyboard Active" : "Input: Waiting for MIDI device";
+  } catch (e) {
+    alert("Could not access MIDI devices. Ensure you are running on a top-level HTTPS page.");
+  }
+});
 
-        function freqToNoteName(freq) {
-            const midi = freqToNoteNames(freq);
-            return midiNoteToName(midi);
-        }
+function selectNoteForEdit(mIdx, hand, nIdx) {
+  selectedNote = { mIdx, hand, nIdx };
+  document.getElementById("editorPanel").classList.add("visible");
+  document.getElementById("btnEditToggle").classList.add("active");
+  const n = score[mIdx][hand][nIdx];
+  document.getElementById("durSelect").value = String(n.d);
+  document.getElementById("selectedNoteInfo").textContent =
+    `Selected: Measure ${mIdx} (${hand.toUpperCase()}), Position #${nIdx + 1} — Pitch: ${midiToName(n.p)}, Duration: ${n.d} beat(s)`;
+  renderScore();
+}
 
-        // --- JSON File Download Setup ---
-        const downloadJsonBtn = document.getElementById('download-json-btn');
-        downloadJsonBtn.addEventListener('click', () => {
-            const practiceData = {
-                app: "Sheet Music Practice App",
-                timestamp: new Date().toISOString(),
-                notesPracticed: [
-                    { note: "C4", duration: "4", timestamp: 1 },
-                    { note: "E4", duration: "4", timestamp: 2 },
-                    { note: "G4", duration: "2", timestamp: 3 }
-                ]
-            };
+document.getElementById("btnEditToggle").addEventListener("click", () => {
+  editMode = !editMode;
+  document.getElementById("editorPanel").classList.toggle("visible", editMode);
+  document.getElementById("btnEditToggle").classList.toggle("active", editMode);
+});
 
-            const blob = new Blob([JSON.stringify(practiceData, null, 2)], { type: 'json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'practice-session.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        });
-    </script>
+document.getElementById("btnPitchUp").addEventListener("click", () => {
+  if (!selectedNote) return;
+  const n = score[selectedNote.mIdx][selectedNote.hand][selectedNote.nIdx];
+  n.p = shiftDiatonic(n.p ?? 60, 1);
+  saveLocal(); rebuildTimeline(); selectNoteForEdit(selectedNote.mIdx, selectedNote.hand, selectedNote.nIdx);
+});
+
+document.getElementById("btnPitchDown").addEventListener("click", () => {
+  if (!selectedNote) return;
+  const n = score[selectedNote.mIdx][selectedNote.hand][selectedNote.nIdx];
+  n.p = shiftDiatonic(n.p ?? 60, -1);
+  saveLocal(); rebuildTimeline(); selectNoteForEdit(selectedNote.mIdx, selectedNote.hand, selectedNote.nIdx);
+});
+
+document.getElementById("durSelect").addEventListener("change", (e) => {
+  if (!selectedNote) return;
+  const n = score[selectedNote.mIdx][selectedNote.hand][selectedNote.nIdx];
+  n.d = parseFloat(e.target.value);
+  saveLocal(); rebuildTimeline(); selectNoteForEdit(selectedNote.mIdx, selectedNote.hand, selectedNote.nIdx);
+});
+
+document.getElementById("btnToggleRest").addEventListener("click", () => {
+  if (!selectedNote) return;
+  const n = score[selectedNote.mIdx][selectedNote.hand][selectedNote.nIdx];
+  n.p = n.p == null ? (selectedNote.hand === "rh" ? 60 : 55) : null;
+  saveLocal(); rebuildTimeline(); selectNoteForEdit(selectedNote.mIdx, selectedNote.hand, selectedNote.nIdx);
+});
+
+document.getElementById("btnResetScore").addEventListener("click", () => {
+  score = JSON.parse(JSON.stringify(DEFAULT_SCORE));
+  noteResults = {};
+  currentStep = 0;
+  saveLocal(); rebuildTimeline(); renderScore();
+});
+
+document.getElementById("btnJsonModal").addEventListener("click", () => {
+  document.getElementById("jsonTextarea").value = JSON.stringify(score, null, 2);
+  document.getElementById("jsonModal").classList.add("open");
+});
+document.getElementById("btnCloseModal").addEventListener("click", () => {
+  document.getElementById("jsonModal").classList.remove("open");
+});
+document.getElementById("btnDownloadJson").addEventListener("click", () => {
+  const blob = new Blob([JSON.stringify(score, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "zie-ginds-komt-de-stoomboot.json";
+  a.click();
+});
+document.getElementById("btnCopyJson").addEventListener("click", async () => {
+  await navigator.clipboard.writeText(document.getElementById("jsonTextarea").value);
+  document.getElementById("btnCopyJson").textContent = "✅ Copied!";
+  setTimeout(() => (document.getElementById("btnCopyJson").textContent = "📋 Copy to Clipboard"), 1500);
+});
+document.getElementById("btnLoadJson").addEventListener("click", () => {
+  try {
+    const parsed = JSON.parse(document.getElementById("jsonTextarea").value);
+    if (!Array.isArray(parsed)) throw new Error("Invalid format");
+    score = parsed;
+    noteResults = {};
+    currentStep = 0;
+    saveLocal(); rebuildTimeline(); renderScore();
+    document.getElementById("jsonModal").classList.remove("open");
+  } catch (e) {
+    alert("Invalid JSON format. Please check your pasted data.");
+  }
+});
+
+const PIANO_KEYS = [
+  { midi: 55, label: "G3", key: "z" }, { midi: 57, label: "A3", key: "x" },
+  { midi: 59, label: "B3", key: "c" }, { midi: 60, label: "C4", key: "a" },
+  { midi: 62, label: "D4", key: "s" }, { midi: 64, label: "E4", key: "d" },
+  { midi: 65, label: "F4", key: "f" }, { midi: 67, label: "G4", key: "g" },
+  { midi: 69, label: "A4", key: "h" }, { midi: 71, label: "B4", key: "j" },
+  { midi: 72, label: "C5", key: "k" }
+];
+
+function buildPiano() {
+  const container = document.getElementById("piano");
+  PIANO_KEYS.forEach(k => {
+    const div = document.createElement("div");
+    div.className = "white-key";
+    div.dataset.midi = k.midi;
+    div.innerHTML = `<strong>${k.label}</strong><span>[${k.key.toUpperCase()}]</span>`;
+    div.addEventListener("mousedown", () => handleNoteInput(k.midi, "Piano"));
+    container.appendChild(div);
+  });
+}
+
+function highlightPianoTarget() {
+  const target = timeline[currentStep];
+  document.querySelectorAll(".white-key").forEach(el => {
+    el.classList.toggle("target", target && parseInt(el.dataset.midi, 10) === target.midi);
+  });
+}
+
+window.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "INPUT") return;
+  const found = PIANO_KEYS.find(k => k.key === e.key.toLowerCase());
+  if (found && !e.repeat) handleNoteInput(found.midi, "Keyboard");
+});
+
+document.getElementById("btnPlay").addEventListener("click", togglePlay);
+document.getElementById("btnStop").addEventListener("click", () => {
+  isPlaying = false;
+  clearTimeout(playTimer);
+  currentStep = 0;
+  noteResults = {};
+  hits = 0; attempts = 0;
+  document.getElementById("btnPlay").textContent = "▶ Play";
+  document.getElementById("hitsStat").textContent = "0";
+  document.getElementById("totalStat").textContent = "0";
+  document.getElementById("accuracyStat").textContent = "100%";
+  rebuildTimeline();
+  renderScore();
+});
+document.getElementById("handSelect").addEventListener("change", () => {
+  currentStep = 0; rebuildTimeline(); renderScore();
+});
+document.getElementById("btnWaitMode").addEventListener("click", (e) => {
+  waitMode = !waitMode;
+  e.target.classList.toggle("active", waitMode);
+  e.target.textContent = waitMode ? "⏸ Wait-for-Note: ON" : "▶ Wait-for-Note: OFF";
+});
+
+buildPiano();
+rebuildTimeline();
+renderScore();
+</script>
 </body>
 </html>
